@@ -49,6 +49,8 @@
         var currentAmmo = max
         //Amount of ammo in the character's inventory
         var inventory = 10
+        //Math
+        var Mathematics = 0
 
         //Changes the words between <span> and </span> for each span element
         triggerDisplay.innerHTML = `AMMO: ${currentAmmo}`
@@ -104,6 +106,13 @@
                 
                 inventory = 0;
                
+            }
+            if(currentAmmo+inventory>=max){
+                Mathematics=max-currentAmmo;
+                currentAmmo=Mathematics+currentAmmo;
+                inventory=inventory-Mathematics;
+                
+
             }
             
             
