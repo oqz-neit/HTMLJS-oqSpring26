@@ -92,6 +92,9 @@
         
         function reload(event)
         {
+            if(currentAmmo==6){
+                return;
+            }
             inventory--
             currentAmmo += 1;
             if(currentAmmo>6){
