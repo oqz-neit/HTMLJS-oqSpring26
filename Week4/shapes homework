@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang>
+    <title> Shapes Excersise</title>
+    <meta charset="UTF-8">
+    <head>
+        <body>
+            <h1>Shapes Homework</h1>
+         <canvas id="canvas" width="800" height="800" style ="border: 5 px solid black;"></canvas> 
+         <script>
+            var myCanvas = document.getElementById("myCanvas")
+            var ctx = canvas.getContext("2d")
+
+            //1.Square
+            //
+            ctx.fillStyle = "yellow"
+            ctx.fillRect(100, 150, 120, 120);
+            ctx.strokeStyle = "black"
+            ctx.strokeRect(100, 150, 120 ,120);
+           
+            //2.circle
+            ctx.strokeStyle = "red"
+            ctx.fillStyle = "yellow"
+            ctx.beginPath();
+            ctx.arc(350, 400, 80, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            
+            //3. line
+            ctx.beginPath();
+            ctx.moveTo(120,650);
+            ctx.lineTo(300,520);
+            ctx.lineWidth = 5;
+            
+            ctx.strokeStyle ="red"
+            ctx.stroke();
+
+            //4.pentagon
+            ctx.beginPath();
+            ctx.moveTo(600, 150);
+            ctx.lineTo(700, 130);
+            ctx.lineTo(750, 210);
+            ctx.lineTo(660, 290);
+            ctx.lineTo(580,250);
+            ctx.closePath();
+            ctx.fillStyle = "pink"
+            ctx.strokeStyle = "cyan"
+            ctx.fill();
+            ctx.stroke();
+
+            
+
+
+         </script>  
+
+
+        </body>
+    </head>
+</html>
