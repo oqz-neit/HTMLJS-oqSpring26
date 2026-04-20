@@ -61,6 +61,21 @@ function game(){
     //clear the game screen
     ctx.clearRect(0, 0, canvas.width, canvas. height);
 
+    //Move the Player
+    if(w == true || up == true){
+        player.y -= 2;
+    }
+    if(s == true || down == true){
+        player.y += 2;
+    }
+    if(a == true || left == true){
+        player.x -= 2;
+
+    }
+    if(d == true || right ==  true){
+        player.x += 2;
+    }
+        
     //myBall.drawBall();
     player.drawSquare();
 

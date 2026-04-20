@@ -20,10 +20,10 @@ function keyDown(e){
         a = true;
     }
     if(e.key == "s"){
-        w = true 
+        s = true; 
     }
     if(e.key == "d"){
-
+        d = true;
     }       
 
 
