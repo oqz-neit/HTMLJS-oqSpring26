@@ -5,23 +5,29 @@ var interval = 1000/60;
 setInterval(game, interval);
 
 
-function createBall(){
-    var ball ={
+function createGameObject(){
+    var gameObject ={
         x: randomNumber(15, canvas.width-15),
         y: randomNumber(15, canvas.height-15),
         moveX:setRandomDirection(),
         moveY:setRandomDirection(),
         color: `rgb(${randomNumber(0,255)}, ${randomNumber(0,255)})`,
         radius: 15,
+        width: 15,
+        height: 15,
         drawBall: function () {
             //draw the object;
             ctx.beginPath();
             ctx.fillStyle = this.color;
             ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
             ctx.fill();
+        },
+        drawSquare:function (){
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x,this.y, this.width, this.height );
         }
      }
-    return ball 
+    return gameObject; 
 }
 
 function randomNumber(low,high){
@@ -36,12 +42,19 @@ function setRandomDirection(){
         return -2;
     }
 }
-
-var myBall = createBall();
+//This creates a single instance of the ball 
+var myBall = createGameObject();
+var player = createGameObject();
+player.x = canvas.width/2;
+player.y = canvas.height/2;
+player.width = 30;
+player.height = 30;
+player.color = "purple"
+//this creates a 
 var myBalls = []
 
 for(var i = 0; i<80; i++){
-    myBalls[i] = createBall();
+    myBalls[i] = createGameObject();
 }
 
 function game(){
@@ -49,6 +62,8 @@ function game(){
     ctx.clearRect(0, 0, canvas.width, canvas. height);
 
     //myBall.drawBall();
+    player.drawSquare();
+
     for(var i = 0; i<myBalls.length; i++){
         myBalls[i].drawBall();
 
