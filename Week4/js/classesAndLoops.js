@@ -7,7 +7,7 @@ setInterval(game, interval);
 
 function createGameObject(){
     var gameObject ={
-        x: randomNumber(15, canvas.width-15),
+        x: randomNumber(115, canvas.width-115),
         y: randomNumber(15, canvas.height-15),
         moveX:setRandomDirection(),
         moveY:setRandomDirection(),
@@ -28,6 +28,8 @@ function createGameObject(){
         }
      }
     return gameObject; 
+
+
 }
 
 function randomNumber(low,high){
@@ -55,6 +57,8 @@ var myBalls = []
 
 for(var i = 0; i<80; i++){
     myBalls[i] = createGameObject();
+    myBalls[i].moveY = 0;
+    myBalls[i].y = -myBalls[i].y
 }
 
 function game(){
@@ -81,23 +85,29 @@ function game(){
 
     for(var i = 0; i<myBalls.length; i++){
         myBalls[i].drawBall();
-
-        if(myBalls[i].x > canvas.width - myBalls[i].radius){
+        //Rightside of canvas
+        if(myBalls[i].x > canvas.width - myBalls[i].radius - 100){
             myBalls[i].moveX *= -1;
             myBalls[i].color = `rgb(${randomNumber(0, 255)}, ${randomNumber(0, 255)}, ${randomNumber(0 ,255)})`;
+            myBalls[i].y += myBalls[i].radius
         }
-        if(myBalls[i].y > canvas.height - myBalls[i].radius){
-            myBalls[i].moveY *= -1;
+        //bottom of canvas
+        if(myBalls[i].y > canvas.height + myBalls[i].radius){
+            // myBalls[i].moveY *= -1;
+            // myBalls[i].color = `rgb(${randomNumber(0, 255)}, ${randomNumber(0, 255)}, ${randomNumber(0 ,255)})`;
+            myBalls[i].y = -randomNumber(0, canvas.height);
+        }
+        //left side of canvas
+        if(myBalls[i].x < myBalls[i].radius + 100){
+            myBalls[i].moveX *= -1;
             myBalls[i].color = `rgb(${randomNumber(0, 255)}, ${randomNumber(0, 255)}, ${randomNumber(0 ,255)})`;
+            myBalls[i].y += myBalls[i].radius*3
         }
-        if(myBalls[i].x < myBall.Balls){
-            myBalls[i].moveX*= -1;
-            myBalls[i].color = `rgb(${randomNumber(0, 255)}, ${randomNumber(0, 255)}, ${randomNumber(0 ,255)})`;
-        }
-        if(myBalls[i].y < myBalls[i].radius){
-            myBalls[i].moveY *= -1;
-            myBalls[i].color = `rgb(${randomNumber(0, 255)}, ${randomNumber(0, 255)}, ${randomNumber(0 ,255)})`;
-        }
+        //topside of canvas
+        // if(myBalls[i].y < myBalls[i].radius){
+        //     myBalls[i].moveY *= -1;
+        //     myBalls[i].color = `rgb(${randomNumber(0, 255)}, ${randomNumber(0, 255)}, ${randomNumber(0 ,255)})`;
+        // }
         //myBalls[i].color = `rgb(${randomNumber(0,225})
         myBalls[i].x += myBalls[i].moveX;
         myBalls[i].y += myBalls[i].moveY;

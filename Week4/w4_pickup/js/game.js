@@ -137,6 +137,7 @@ function main()
     ctx.font = "64px Arial";
     ctx.direction = "ltr";
     ctx.fillText(score, 50, 50)
+    
 }
 
 //random number generator
