@@ -10,9 +10,11 @@ var up = false;
 var down = false; 
 var left = false;
 var right = false;
+var space = false;
 
 function keyDown(e){
     console.log("Pressed" + e.key)
+    console.log("Pressed" + e.keyCode)
     if(e.key == "w"){
         w = true;
     }
@@ -24,6 +26,9 @@ function keyDown(e){
     }
     if(e.key == "d"){
         d = true;
+    }
+    if(e.keyCode == 32){
+        space = true;
     }       
 
 
@@ -43,5 +48,8 @@ function keyUp(e){
         d = false;
 
     }
+     if(e.keyCode == 32){
+        space = false;
+    }       
 
 }
