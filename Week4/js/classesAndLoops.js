@@ -7,7 +7,8 @@ setInterval(game, interval);
 var acceleration = 0.6;//how fast we speed up 
 var friction = 0.88;//how fast we speed upor slow down. between 0.0 and 1.0
 var maxspeed = 10;
-
+var numberOfShips;
+var score = 0;
 
 function createGameObject(){
     var gameObject ={
@@ -87,9 +88,16 @@ function shoot(){
     setTimeout(function(){canShoot = true}, 500);
 }
 
+function drawHUD(){
+    ctx.fillStyle = "black";
+    ctx.font = "14px, Arial";
+    ctx.fillText(`Ships Defeated ${score} | Ships Left ${numberOfShips}`,25, 25);
+}
+
 function game(){
     //clear the game screen
     ctx.clearRect(0, 0, canvas.width, canvas. height);
+    numberOfShips = myBalls.length;
 
     //Move the Player
     if(w == true || up == true){
@@ -157,7 +165,7 @@ function game(){
 
         }
         
-        
+        //Collision between the bullets and the balls
          for(var b = bullets.length - 1; b>=0; b--){
             console.log(bullets.length)
             bullets[b].x += bullets[b].velocityX;
@@ -175,15 +183,19 @@ function game(){
 
                 if(dist < myBalls[e].radius){
                     //Remove Ball from the screen
-                    myBalls.splice(myBalls[e], 1);
+                    myBalls.splice(e, 1);
+                    bullets.splice(b, 1);
+                    break;
+
 
                 }
 
 
             }
 
-            //draw bullet to the screen
-            bullets[b].drawSquare();
+        //draw bullet to the screen
+        bullets[b].drawSquare();
             
         }
+        drawHUD();
         }
