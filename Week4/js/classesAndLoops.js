@@ -9,6 +9,8 @@ var friction = 0.88;//how fast we speed upor slow down. between 0.0 and 1.0
 var maxspeed = 10;
 var numberOfShips;
 var score = 0;
+//comment reference to ship sprite
+var ship = document.getElementById("ship")
 
 function createGameObject(){
     var gameObject ={
@@ -22,6 +24,7 @@ function createGameObject(){
         radius: 15,
         width: 15,
         height: 15,
+        sprite: "ship",
         drawBall: function () {
             //draw the object;
             ctx.beginPath();
@@ -32,11 +35,16 @@ function createGameObject(){
         drawSquare:function (){
             ctx.fillStyle = this.color;
             ctx.fillRect(this.x,this.y, this.width, this.height );
+        },
+        drawSprite:function(){
+            ctx.drawImage(this.sprite,this.x,this.y,this.width,this.height);
+
         }
-     }
+
+        }
+            
+     
     return gameObject; 
-
-
 }
 
 function randomNumber(low,high){
@@ -59,6 +67,7 @@ player.y = canvas.height/2;
 player.width = 30;
 player.height = 30;
 player.color = "purple"
+player.sprite = "ship";
 //this creates a 
 var myBalls = [];
 var numeberofDots = 10;
@@ -130,6 +139,9 @@ function game(){
         
     //myBall.drawBall();
     player.drawSquare();
+
+    //player draw sprite
+    player.drawSprite();
 
     for(var i = 0; i<myBalls.length; i++){
         myBalls[i].drawBall();
