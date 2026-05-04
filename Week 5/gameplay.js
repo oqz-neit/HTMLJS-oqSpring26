@@ -13,8 +13,8 @@ var maxspeed = 11;
 //creation of player 
 function createGameObject(){
     var gameObject = {
-    x: randomNumber(115, canvas.width-115),
-    y: randomNumber(15,canvas.height-115),
+    x: randomNumber(500, canvas.width/2 - 1000),
+    y: randomNumber(50,canvas.height/2 - 1000),
     moveX: setRandomDirection(), 
     moveY: setRandomDirection(),
     velocityX:0,
@@ -36,12 +36,27 @@ function createGameObject(){
         ctx.lineTo(120,150);
         ctx.lineTo(120,120);
         ctx.fill();
+        
          
     },
 
     }
     return gameObject;
 }
+
+function randomNumber(low,high){
+    return Math.random * (high - low) + low;
+    }
+function setRandomDirection(){
+    var dir = Math.random();
+    if(dir > 0.5){
+        return 2; 
+    } else {
+        return -2
+    }
+}
+
+
 //Player Instance
 var myBall = createGameObject();
 var player = createGameObject();
@@ -50,9 +65,39 @@ player.y = canvas.height/2;
 player.width = 30;
 player.height = 30;
 player.color = "yellow"
+var myBalls = [];
+var numeberofDots = 10;
 
 for(var i = 0; i<numeberofDots; i++){
     myBalls[i] = createGameObject();
     myBalls[i].moveY = 0;
-    myBalls[i].y = k
+    myBalls[i].y = myBalls[i].y
 }
+
+//bullets
+var bullet =[];
+var canShoot = true
+//shooting mechanics
+function shoot(){
+    var bullet = createGameObject();
+    bullet.x = player.x + player.width /2 - 4;
+    bullet.y = player.y;
+    bullet.width = 8;
+    bullet.height = -10;
+    bullet.color = "orange";
+    bullet.velocityY = -10;
+    //bullet array
+    bullets.push(bullet);
+    canShoot = false;
+    //cooldown
+    setTimeout(function () {canShoot = true}, 300);
+}
+
+function game(){
+    //clear screen
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    //moving the player
+}
+
+
