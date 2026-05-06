@@ -110,7 +110,7 @@ function game() {
     //clear the game screen
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    switch (states) {
+    switch (states){
         case "game":
             //all of the game code will go here
 
