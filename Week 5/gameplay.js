@@ -103,7 +103,7 @@ function game(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     //moving the player
- numeberofDots = myBalls.length;
+    numeberofDots = myBalls.length;
     if(numeberofDots <= 0){
         states = "win"
     }
@@ -137,7 +137,7 @@ function game(){
 
     //stage boundaries
     
-
+    
 
 
     for (var i = 0; i < myBalls.length; i++){
