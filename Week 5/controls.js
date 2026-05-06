@@ -2,14 +2,14 @@ var keydown = document.addEventListener("keydown", keyDown);
 var keyup = document.addEventListener("keyup", keyUp);
 var click = document.addEventListener("click", function(){
     console.log("mouse click")
+    click = true;
 });
 //general movement
 var w = false;
 var a = false;
 var s = false;
 var d = false;
-//powerups
-var space = false;
+
 
 var up = false;
 var down = false;
@@ -21,39 +21,39 @@ function keyDown(e){
     console.log("Pressed" + e.key)
     console.log("Pressed" + e.keyCode)
     if(e.key == "w"){
-        w == true;
+        w = true;
     }
     if(e.key == "a"){
-         a == true;
+         a = true;
     }
     if(e.key == "s"){
-        s == true;
+        s = true;
     }
     if(e.key == "d"){
-        d == true;
+        d = true;
     }
     if(e.keyCode == 32){
-        space == true; 
+        space = true; 
     }
 }
 function keyUp(e){
     console.log("Released" + e.key)
     if(e.key == "w"){
-        w == false;
+        w = false;
         
     }
     if(e.key == "a"){
-        a == false;
+        a = false;
     }
     if(e.key == "s"){
-        s == false; 
+        s = false; 
 
     }
     if(e.key == "d"){
-        d == false;
+        d = false;
     }
     if(e.keyCode == 32){
-        space == false
+        space = false;
     }
 
     
