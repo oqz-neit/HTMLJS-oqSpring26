@@ -37,15 +37,19 @@ function createGameObject(){
         ctx.fill()
     },
      drawSquare: function () {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
         ctx.fillStyle = this.color;
         ctx.strokeStyle = "black";
         ctx.beginPath();
-        ctx.moveTo(this.x, this.y - this.radius);
-        ctx.lineTo(this.x - this.radius, this.y + this.radius);
-        ctx.lineTo(this.x + this.radius, this.y + this.radius);
+        ctx.moveTo(0, -this.radius);
+        ctx.lineTo(-this.radius,this.radius);
+        ctx.lineTo(this.radius,this.radius);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
+        ctx.restore();
     },
 
     }
@@ -73,12 +77,27 @@ player.y = canvas.height/2;
 player.width = 30;
 player.height = 30;
 player.color = "yellow"
+player.rotation = 0;  // initialize rotation
 var myBalls = [];
 var numberofEnemies = 10;
 
 for(var i = 0; i<numberofEnemies; i++){
     myBalls[i] = createGameObject();
-    myBalls[i].y = myBalls[i].y
+    //spawn ouitside of canvas
+    var side = Math.floor(Math.random() * 4);
+    if(side === 0){ // top
+        myBalls[i].x = randomNumber(0, canvas.width);
+        myBalls[i].y = myBalls[i].radius;
+    }else if(side === 1){ //right
+        myBalls[i].x = canvas.width + myBalls[i].radius;
+        myBalls[i].y = randomNumber(0, canvas.height);
+    }else if (side == 2){//bottom
+        myBalls[i].x = randomNumber(0, canvas.width);
+        myBalls[i].y = canvas.height + myBalls[i].radius;
+    }else{ // left 
+        myBalls[i].x = -myBalls[i].radius;
+        myBalls[i].y = randomNumber(0, canvas.height);
+    }
 }
 
 //bullets
@@ -87,12 +106,21 @@ var canShoot = true
 //shooting mechanics
 function shoot(){
     var bullet = createGameObject();
-    bullet.x = player.x + player.width /2 - 4;
-    bullet.y = player.y;
+    
+    // Offset bullet spawn to tip of triangle
+    var tipDistance = player.radius;
+    var fireAngle = player.rotation - Math.PI / 2;  // Remove the +π/2 offset
+    bullet.x = player.x + Math.cos(fireAngle) * tipDistance;
+    bullet.y = player.y + Math.sin(fireAngle) * tipDistance;
+    
     bullet.width = 8;
     bullet.height = 10;
     bullet.color = "red";
-    bullet.velocityY = -10;
+
+    //fire in the direction the player is facing
+    var speed = 10;
+    bullet.velocityX = Math.cos(fireAngle) * speed;
+    bullet.velocityY = Math.sin(fireAngle) * speed;
     //bullet array
     bullets.push(bullet);
     canShoot = false;
@@ -131,6 +159,11 @@ function game(){
     if(numberofEnemies <= 0){
         states = "win";
     }
+    //player rotation
+    var dx = mouseX - player.x;
+    var dy = mouseY - player.y;
+    player.rotation = Math.atan2 (dy, dx) + Math.PI / 2;
+    //
     if(w == true || up == true){
         player.velocityY -= acceleration
     }
@@ -159,6 +192,12 @@ function game(){
     //updating postition
     player.x += player.velocityX;
     player.y += player.velocityY;
+
+    //player boundaries
+    if(player.x - player.radius < 0) player.x = player.radius;
+    if(player.x + player.radius > canvas.width) player.x = canvas.width - player.radius;
+    if(player.y - player.radius < 0) player.y = player.radius;
+    if(player.y + player.radius > canvas.height) player.y = canvas.height - player.radius
 
     myBall.drawBall();
     player.drawSquare();
@@ -229,8 +268,6 @@ function game(){
            
         }
     }
-
+        break;
+    }
 }
-    
-}
-

@@ -17,6 +17,16 @@ var left = false;
 var right = false; 
 var space = false; 
 
+//cursor tracking
+var mouseX = 0;
+var mouseY = 0;
+
+document.addEventListener("mousemove", function(e){
+    var rect = document.getElementById("myCanvas").getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+})
+
 function keyDown(e){
     console.log("Pressed" + e.key)
     console.log("Pressed" + e.keyCode)
@@ -56,5 +66,10 @@ function keyUp(e){
         space = false;
     }
 
-    
+ //reset if clicking out of window
+ window.addEventListener("blur", function(){
+    w = a = s = d = false;
+    space = false;
+ });   
 }
+a
