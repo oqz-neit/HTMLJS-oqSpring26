@@ -65,11 +65,9 @@ function keyUp(e){
     if(e.keyCode == 32){
         space = false;
     }
-
- //reset if clicking out of window
+}
+//reset if clicking out of window
  window.addEventListener("blur", function(){
     w = a = s = d = false;
     space = false;
  });   
-}
-a
