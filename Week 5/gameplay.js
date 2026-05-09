@@ -2,8 +2,8 @@
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
-var interval = 1000/ 60;
-setInterval(game,interval);
+var lasttime = 0;
+requestAnimationFrame(game);
 
 //player speed
 var acceleration = 0.6;
@@ -178,7 +178,7 @@ function drawHUD(){
     //minutes and seconds 
     var minutes = Math.floor(timer / 60);
     var seconds = Math.floor(timer % 60);
-    var secondsText = String(seconds).padStart(2,"0");
+    
     //display
 ctx.fillStyle = "black";
 ctx.font = "20px Arial";
@@ -193,14 +193,19 @@ if(bulletHellTimer > 0 ){
     } 
 }
 
-function game(){
+function game(timestamp){
     //clear screen & increasing timer
+    requestAnimationFrame(game);
+    var delta = (timestamp - lasttime) / 1000;
+    lasttime = timestamp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    timer += interval/1000;
-    spawnTimer += interval/1000;
-    var spawnRate = Math.max(1, 3 - Math.floor(timer / 30));
-    if(spawnTimer >= spawnRate){
-        spawnTimer = 0;
+    timer += delta;
+    spawnTimer += delta;
+    
+        var spawnRate = Math.max(1, 3 - Math.floor(timer / 30));
+        if(spawnTimer >= spawnRate){
+            spawnTimer = 0;
+        
         var count = 1 + Math.floor(timer / 30);
         for(var j = 0; j < count; j++){
             spawnEnemy();
@@ -222,16 +227,16 @@ function game(){
     player.rotation = Math.atan2 (dy, dx) + Math.PI / 2;
     //
     if(w == true || up == true){
-        player.velocityY -= acceleration
+        player.velocityY -= acceleration * (delta *60 )
     }
     if(s == true || down == true){
-        player.velocityY += acceleration
+        player.velocityY += acceleration* (delta *60 )
     }
     if(a == true || left == true){
-        player.velocityX -= acceleration
+        player.velocityX -= acceleration* (delta *60 )
     }
     if(d == true || right == true){
-        player.velocityX += acceleration
+        player.velocityX += acceleration* (delta *60 )
     }
     if(space && currentPowerup && !isDashing){
         if(currentPowerup === "dash"){
@@ -252,12 +257,12 @@ function game(){
     }
 
     //velocity to zero
-    player.velocityY *= friction;
-    player.velocityX *= friction;
+    player.velocityY *= Math.pow(friction, delta * 60);
+    player.velocityX *= Math.pow(friction, delta * 60);
 
     //updating postition
-    player.x += player.velocityX;
-    player.y += player.velocityY;
+    player.x += player.velocityX * (delta * 60);
+    player.y += player.velocityY * (delta * 60);
 
     //player boundaries
     if(player.x - player.radius < 0) player.x = player.radius;
@@ -270,7 +275,7 @@ function game(){
         var dashAngle = player.rotation - Math.PI / 2;
         player.x += Math.cos(dashAngle) * dashSpeed;
         player.y += Math.sin(dashAngle) * dashSpeed;
-        dashTimer--;
+        dashTimer -= delta * 60;
         if(dashTimer <= 0) isDashing = false;
         for(var e = myBalls.length - 1; e >= 0; e--){
             var edx = player.x - myBalls[e].x;
@@ -306,8 +311,8 @@ function game(){
                 enemy.moveY = (dy / dist) * speed
                 
             }
-            enemy.x += enemy.moveX;
-            enemy.y += enemy.moveY;
+            enemy.x += enemy.moveX * (delta * 60);
+            enemy.y += enemy.moveY * (delta * 60);
            
 
             //boundary check
@@ -356,8 +361,8 @@ function game(){
         
         //collision between the bullets and the balls 
         for(var b = bullets.length - 1; b >= 0; b--){
-        bullets[b].x += bullets[b].velocityX;
-            bullets[b].y += bullets[b].velocityY;
+        bullets[b].x += bullets[b].velocityX * (delta * 60);
+            bullets[b].y += bullets[b].velocityY * (delta * 60);
 
             bullets[b].drawSquare();
 
@@ -375,16 +380,16 @@ function game(){
                     var deadY = myBalls[e].y;
                     myBalls.splice(e, 1);
                     bullets.splice (b, 1);
-                    if(Math.random() < 0.2){
+                    if(Math.random() < 0.1){
                         var types = ["dash", "nuke", "bulletHell"];
                         var type = types[Math.floor(Math.random() * types.length)];
-                        var puColors = {dash: "cyan", nuke: "orange", bulletHell: "magneta"};
+                        var puColors = {dash: "cyan", nuke: "orange", bulletHell: "magenta"};
                         powerupItems.push({x: deadX, y: deadY, radius: 10, type: type, color: puColors[type]});
                     }
                     break;
 
                 }
-
+                
             }
            
         }
@@ -392,4 +397,5 @@ function game(){
         }       
         break;
     }
+
 }
