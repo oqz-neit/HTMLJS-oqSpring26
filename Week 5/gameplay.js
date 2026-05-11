@@ -33,10 +33,18 @@ function createGameObject(){
     hasEntered:false,
     drawBall: function (){
         ctx.beginPath();
-        ctx.fillStyle = this.color
-        ctx.arc(this.x,this.y,this.radius,0,2 * Math.PI)
-        ctx.fill()
+        ctx.fillStyle = "green";
+        ctx.arc(this.x,this.y,this.radius,0,2 * Math.PI);
+        ctx.fill();
     },
+    // drawSquare:function(){
+    //     ctx.beginPath();
+    //     ctx.fillStyle = "green"
+    //     ctx.fillRect(this.x, this.y, this.width, this.height);
+    //     ctx.clearRect(45, 45, 60, 60);
+    //     ctx.fill();
+        
+    // },
      drawSquare: function () {
         ctx.save();
         ctx.translate(this.x, this.y);
@@ -129,12 +137,18 @@ function shoot(){
     var speed = 10;
     bullet.velocityX = Math.cos(fireAngle) * speed;
     bullet.velocityY = Math.sin(fireAngle) * speed;
+    bullet.rotation = player.rotation;
     //bullet array
     bullets.push(bullet);
     canShoot = false;
     //cooldown
-    setTimeout(function () {canShoot = true}, 300);
+    setTimeout(function () {canShoot = true}, 200);
 }
+//pacman powerup
+// function pacman(){
+//     var player = createGameObject();
+    
+// }
 //bullet hell powerup
 function bulletHell(){
     var numBullets = 16;
@@ -146,6 +160,7 @@ function bulletHell(){
         b.color = "magenta";
         b.width = 8;
         b.height = 10;
+        b.rotation = player.rotation;
         b.velocityX = Math.cos(angle) * 10;
         b.velocityY = Math.sin(angle) * 10;
         bullets.push(b);
@@ -164,7 +179,7 @@ function startBulletHell(){
         bulletHellTimer = 0;
     }, 3000);
 }
-//powerups
+//powerup
 var powerupItems = []; //pickups on screen
 var currentPowerup = null; //no powerup held
 var isDashing = false;
@@ -202,11 +217,11 @@ function game(timestamp){
     timer += delta;
     spawnTimer += delta;
     
-        var spawnRate = Math.max(1, 3 - Math.floor(timer / 30));
+        var spawnRate = Math.max(1, 3 - Math.floor(timer / 20));
         if(spawnTimer >= spawnRate){
             spawnTimer = 0;
         
-        var count = 1 + Math.floor(timer / 30);
+        var count = 1 + Math.floor(timer / 20);
         for(var j = 0; j < count; j++){
             spawnEnemy();
         }
@@ -227,17 +242,18 @@ function game(timestamp){
     player.rotation = Math.atan2 (dy, dx) + Math.PI / 2;
     //
     if(w == true || up == true){
-        player.velocityY -= acceleration * (delta *60 )
+        player.velocityY -= acceleration * (delta *60 );
+        
     }
     if(s == true || down == true){
-        player.velocityY += acceleration* (delta *60 )
+        player.velocityY += acceleration * (delta *60 );
     }
-    if(a == true || left == true){
-        player.velocityX -= acceleration* (delta *60 )
-    }
-    if(d == true || right == true){
-        player.velocityX += acceleration* (delta *60 )
-    }
+     if(a == true || left == true){
+         player.velocityX -= acceleration* (delta *60 )
+     }
+     if(d == true || right == true){
+         player.velocityX += acceleration* (delta *60 )
+     }
     if(space && currentPowerup && !isDashing){
         if(currentPowerup === "dash"){
             isDashing = true;
@@ -253,7 +269,7 @@ function game(timestamp){
         
     if(click && canShoot){
         shoot();
-        click = false;
+       
     }
 
     //velocity to zero
@@ -293,11 +309,7 @@ function game(timestamp){
     player.drawSquare();
 
     
-    
-    
-
-
-        for (var i = 0; i < myBalls.length; i++){
+    for (var i = 0; i < myBalls.length; i++){
             var enemy = myBalls[i];
 
             var dx = player.x - enemy.x;
