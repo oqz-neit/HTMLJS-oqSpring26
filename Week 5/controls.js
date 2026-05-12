@@ -1,8 +1,13 @@
 var keydown = document.addEventListener("keydown", keyDown);
 var keyup = document.addEventListener("keyup", keyUp);
-var click = document.addEventListener("click", function(){
-    console.log("mouse click")
+var click = false;
+var clickdown = document.addEventListener("mousedown", function(){
+    //console.log("mouse click")
     click = true;
+});
+var clickup = document.addEventListener("mouseup", function(){
+    //console.log("mouse click")
+    click = false;
 });
 //general movement
 var w = false;
@@ -26,6 +31,13 @@ document.addEventListener("mousemove", function(e){
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
 })
+
+
+
+
+
+
+
 
 function keyDown(e){
     console.log("Pressed" + e.key)
@@ -65,6 +77,7 @@ function keyUp(e){
     if(e.keyCode == 32){
         space = false;
     }
+   
 }
 //reset if clicking out of window
  window.addEventListener("blur", function(){
