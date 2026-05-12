@@ -37,14 +37,7 @@ function createGameObject(){
         ctx.arc(this.x,this.y,this.radius,0,2 * Math.PI);
         ctx.fill();
     },
-    // drawSquare:function(){
-    //     ctx.beginPath();
-    //     ctx.fillStyle = "green"
-    //     ctx.fillRect(this.x, this.y, this.width, this.height);
-    //     ctx.clearRect(45, 45, 60, 60);
-    //     ctx.fill();
-        
-    // },
+ 
      drawSquare: function () {
         ctx.save();
         ctx.translate(this.x, this.y);
@@ -108,7 +101,25 @@ function spawnEnemy(){
         enemy.y = randomNumber(0, canvas.height);
 
     }
-    myBalls.push(enemy);
+    //enemy types foundation
+   var roll = Math.random();
+   if(roll < 0.65){ // reg chaser
+    enemy.type = "chaser";
+   } else if(roll < 0.9){ //shooter
+    enemy.type = "shooter";
+    enemy.color = "#ff4444";
+    enemy.shootTimer = 0;
+    enemy.shootInterval = 2.5;
+   } else { // orbital enemy 
+    enemy.type = "orbital";
+    enemy.color = "#8800cc";
+    enemy.orbiting = false;
+    enemy.orbitAngle = Math.random() * 2 * Math.PI;
+    enemy.orbitRadius = 150;
+    enemy.orbitSpeed = (Math.random() > 0.5) ? 1.5 : -1.5;
+    enemy.dodgeCooldown = 0;
+   }
+   myBalls.push(enemy);
 }
 
 //starting 10 enemies to start
@@ -118,7 +129,10 @@ for(var i = 0; i < 10; i++){
 
 //bullets
 var bullets =[];
-var canShoot = true
+var canShoot = true;
+var enemyBullets = [];
+var bossSpawned = false;
+var snakeBoss = null;
 //shooting mechanics
 function shoot(){
     var bullet = createGameObject();
@@ -207,7 +221,31 @@ if(bulletHellTimer > 0 ){
     ctx.fillText("BULLET HELL:" + bulletHellTimer, 20, 80);
     } 
 }
-
+function drawDiamond(e){
+    ctx.save();
+    ctx.translate(e.x,e.y);
+    ctx.rotate(Math.PI / 4);    //45 degree turns a square into a diamond 
+    ctx.fillStyle = "#ff4444";
+    ctx.strokeStyle = "#990000";
+    ctx.lineWidth = 2;
+    ctx.fillRect(-e.radius, -e.radius,e.radius * 2, e.radius * 2);
+    ctx.strokeRect(-e.radius,-e.radius, e.radius * 2, e.radius * 2);
+    ctx.restore();
+}
+function drawStripedCircle(e){
+    ctx.save();
+    ctx.translate(e.x,e.y);
+    ctx.beginPath();
+    ctx.arc(0, 0, e.radius, 0, 2 * Math.PI);
+    ctx.clip(); //clips drawing to the circle's shape 
+    ctx.fillStyle = e.orbiting ? "#cc00cc" : "#8800cc"; //brighter when orbiting
+    ctx.fillRect(-e.radius,-e.radius,e.radius * 2, e.radius * 2);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.35)"
+    for(var i = -e.radius; i < e.radius; i += 7){ //draw verticle stripes 
+    ctx.fillRect(i, -e.radius, 3, e.radius * 2);
+    }
+    ctx.restore();
+}
 function game(timestamp){
     //clear screen & increasing timer
     requestAnimationFrame(game);
@@ -320,19 +358,62 @@ function game(timestamp){
     for (var i = 0; i < myBalls.length; i++){
             var enemy = myBalls[i];
 
-            var dx = player.x - enemy.x;
-            var dy = player.y - enemy.y;
-            var dist = Math.sqrt(dx * dx + dy * dy);
-
-            var speed = 2;
-    
-            if (dist > 0){
-                enemy.moveX = (dx / dist) * speed;
-                enemy.moveY = (dy / dist) * speed
-                
+           if(enemy.type === "orbital" && enemy.orbiting){
+            if(Math.random() < 0.15 * delta){
+                enemy.orbitSpeed *= -1;
             }
+            if(enemy.dodgeCooldown > 0){
+                enemy.dodgeCooldown -= delta;
+            }
+            for(var bd = 0; bd < bullets.length; bd++){
+                var bddx = bullets[bd].x - enemy.x;
+                var bddy = bullets[bd].y - enemy.y;
+                var bddist = Math.sqrt(bddx * bddx + bddy * bddy);
+                if(bddist < 70 && enemy.dodgeCooldown <= 0){
+                    enemy.orbitSpeed *= -1;
+                    enemy.dodgeCooldown = 0.5;
+                    break;
+                }
+            }
+            enemy.orbitAngle += enemy.orbitSpeed * delta;
+            enemy.orbitRadius -= 25 * delta;
+            enemy.x = player.x + Math.cos(enemy.orbitAngle) * enemy.orbitRadius;
+            enemy.y = player.y + Math.sin(enemy.orbitAngle) * enemy.orbitRadius;
+            if(enemy.orbitRadius <= player.radius){
+                score = Math.max(0, score - 1);
+                myBalls.splice(i,1);
+                i--;
+            }
+           } else {
+            var edx = player.x - enemy.x;
+            var edy = player.y - enemy.y;
+            var edist = Math.sqrt(edx * edx  + edy * edy);
+            var espeed = (enemy.type === "shooter") ? 1.2 : 2;
+            if(edist > 0){
+                enemy.moveX = (edx / edist) * espeed;
+                enemy.moveY = (edy / edist) * espeed;
+            } 
             enemy.x += enemy.moveX * (delta * 60);
             enemy.y += enemy.moveY * (delta * 60);
+           }
+           if(enemy.type === "shooter"){
+            enemy.shootTimer += delta;
+            if(enemy.shootTimer >= enemy.shootInterval){
+                enemy.shootTimer = 0;
+                var adx = player.x - enemy.x;
+                var ady = player.y - enemy.y;
+                var adist = Math.sqrt(adx * adx + ady * ady);
+                if(adist > 0){
+                    enemyBullets.push({
+                        x: enemy.x,
+                        y: enemy.y,
+                        velocityX:(adx / adist) * 4,
+                        velocityY: (ady / adist) * 4,
+                        radius: 5 
+                    });
+                }
+            }
+           }
            
 
             //boundary check
@@ -359,7 +440,13 @@ function game(timestamp){
                     }
                 }
              
-            enemy.drawBall();
+            if(enemy.type === "shooter"){//shooter draw back
+                drawDiamond(enemy);
+            } else if(enemy.type === "orbital"){//orbital draw back
+                drawStripedCircle(enemy);
+            }else{
+                enemy.drawBall();//chaser
+            }
           
         }
         //powerup draw and collect
@@ -385,7 +472,7 @@ function game(timestamp){
             bullets[b].y += bullets[b].velocityY * (delta * 60);
 
             bullets[b].drawSquare();
-
+                
             if (bullets[b].y + bullets[b].height < 0){
                 bullets.splice(b,1)
             }else{
@@ -395,26 +482,45 @@ function game(timestamp){
                 var dist = Math.sqrt((distX* distX) + (distY * distY))
                 //drop logic
                 if(dist < myBalls[e].radius){
-                    score++;
-                    var deadX = myBalls[e].x;
-                    var deadY = myBalls[e].y;
-                    myBalls.splice(e, 1);
-                    bullets.splice (b, 1);
-                    if(Math.random() < 0.1){
-                        var types = ["dash", "nuke", "bulletHell"];
-                        var type = types[Math.floor(Math.random() * types.length)];
-                        var puColors = {dash: "cyan", nuke: "orange", bulletHell: "magenta"};
-                        powerupItems.push({x: deadX, y: deadY, radius: 10, type: type, color: puColors[type]});
+                    if(myBalls[e].type === "orbital" && !myBalls[e].orbiting){
+                        myBalls[e].orbiting = true;
+                        bullets.splice (b, 1);
+                    }else{
+                        score++;
+                        var deadX = myBalls[e].x;
+                        var deadY = myBalls[e].y;
+                        myBalls.splice(e, 1);
+                        bullets.splice(b, 1);
+                        if(Math.random() < 0.1){
+                            var types = ["dash","nuke", "bulletHell"];
+                            var type = types[Math.floor(Math.random() * types.length)];
+                            var puColors = {dash: "cyan", nuke: "orange", bulletHell: "magenta"};
+                            powerupItems.push({x: deadX, y: deadY, radius: 10, type: type, color: puColors[type]});
+                        }
+                        
                     }
                     break;
-
                 }
                 
             }
+            
            
         }
     
-        }       
+        }   
+        for(var eb = enemyBullets.length - 1; eb >= 0; eb--){
+                enemyBullets[eb].x += enemyBullets[eb].velocityX * (delta * 60);
+                enemyBullets[eb].y += enemyBullets[eb].velocityY * (delta * 60);
+                ctx.beginPath();
+                ctx.fillStyle = "#ff4444";
+                ctx.arc(enemyBullets[eb].x, enemyBullets[eb].y, enemyBullets[eb].radius, 0, 2 * Math.PI);
+                ctx.fill();
+                if(enemyBullets[eb].x < 0 || enemyBullets[eb].x > canvas.width ||
+                    enemyBullets[eb].y < 0 || enemyBullets[eb].y > canvas.height){
+                        enemyBullets.splice(eb, 1);
+                    }
+                
+            }    
         break;
     }
 
