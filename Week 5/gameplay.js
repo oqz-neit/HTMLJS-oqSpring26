@@ -226,17 +226,19 @@ function game(timestamp){
     var dy = mouseY - player.y;
     player.rotation = Math.atan2 (dy, dx) + Math.PI / 2;
     //
+    var moveX = 0;
+    var moveY = 0;
     if(w == true || up == true){
-        player.velocityY -= acceleration * (delta *60 )
+        moveY -= 1; 
     }
     if(s == true || down == true){
-        player.velocityY += acceleration* (delta *60 )
+        moveY += 1;
     }
     if(a == true || left == true){
-        player.velocityX -= acceleration* (delta *60 )
+        moveX -= 1;
     }
     if(d == true || right == true){
-        player.velocityX += acceleration* (delta *60 )
+        moveX += 1;
     }
     if(space && currentPowerup && !isDashing){
         if(currentPowerup === "dash"){
@@ -256,9 +258,16 @@ function game(timestamp){
         click = false;
     }
 
+    //acceleration
+    player.velocityX += moveX * acceleration * (delta * 60);
+    player.velocityY += moveY * acceleration * (delta * 60);
+    
     //velocity to zero
     player.velocityY *= Math.pow(friction, delta * 60);
     player.velocityX *= Math.pow(friction, delta * 60);
+
+    player.velocityX = Math.max(-maxspeed, Math.min(maxspeed,player.velocityX));
+    player.velocityY = Math.max(-maxspeed, Math.min(maxspeed, player.velocityY));
 
     //updating postition
     player.x += player.velocityX * (delta * 60);
