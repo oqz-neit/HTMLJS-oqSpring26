@@ -166,6 +166,7 @@ var snakeBoss = null;
 var bossTime = 80;
 var bossAlert = 0;
 var alertMessage = "";
+var pendingAlert = "";
 var weaponUpgraded = false;
 var tripleShot = false;
 //shooting mechanics
@@ -398,12 +399,19 @@ function spawnSnakeBoss(){
         }
         if(bossAlert > 0){
             bossAlert -= delta;
+            if(bossAlert <= 0 && pendingAlert !== ""){
+                alertMessage = pendingAlert;
+                pendingAlert = "";
+                bossAlert = 3;
+            }
+            if(bossAlert > 0){
             ctx.save();
-        ctx.fillStyle = "rgba(255, 0, 0," + Math.min(1, bossAlert) + ")";
-        ctx.font = "bold 100px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(alertMessage, canvas.width / 2, canvas.height / 2);
-        ctx.restore();
+            ctx.fillStyle = "rgba(255, 0, 0," + Math.min(1, bossAlert) + ")";
+            ctx.font = "bold 100px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(alertMessage, canvas.width / 2, canvas.height / 2);
+            ctx.restore();
+            }
         }
 
 
@@ -645,7 +653,8 @@ function spawnSnakeBoss(){
                                             snakeBoss = null;
                                             tripleShot = true;
                                             bossAlert = 3;
-                                            alertMessage = "BOSS ABOLISHED"
+                                            alertMessage = "BOSS ABOLISHED";
+                                            pendingAlert = "TRIGUN ACQUIRED";
                                         }
                                     } else{
                                         bullets.splice(b, 1);
