@@ -167,7 +167,7 @@ var bossTime = 80;
 var bossAlert = 0;
 var alertMessage = "";
 var weaponUpgraded = false;
-var tripleShot = true;
+var tripleShot = false;
 //shooting mechanics
 function shoot(){
     // Offset bullet spawn to tip of triangle
