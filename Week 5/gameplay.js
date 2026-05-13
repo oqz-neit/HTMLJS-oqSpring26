@@ -176,7 +176,7 @@ var tripleShot = false;
 //game over + high score
 function triggerGameOver(){
     deathScore = score;
-    deathTime = score;
+    deathTime = timer;
     if(deathScore > highScore) highScore = deathScore;
     if(deathTime > highScoreTime) highScoreTime = deathTime;
     states = "gameOver";
@@ -200,6 +200,8 @@ function resetGame(){
     invincibleTimer = 0;
     dashTimer = 0;
     bulletHellTimer = 0;
+    if(hellInterval){ clearInterval(hellInterval); hellInterval = null; }
+    if(hellTimeout){ clearTimeout(hellTimeout); hellTimeout = null; }
     currentPowerup = null;
     powerupItems = [];
     player.x = canvas.width / 2;
@@ -268,12 +270,13 @@ function bulletHell(){
 function startBulletHell(){
     bulletHellTimer = 3;
     bulletHell();
-    var hellInterval = setInterval(function(){
+ hellInterval = setInterval(function(){
         bulletHell();
         bulletHellTimer--;
     }, 1000);
-    setTimeout(function(){
+    hellTimeout = setTimeout(function(){
         clearInterval(hellInterval);
+        hellInterval = null;
         bulletHellTimer = 0;
     }, 3000);
 }
@@ -286,6 +289,8 @@ var dashTimer = 0;
 var dashDuration = 15;
 var dashSpeed = 25;
 var bulletHellTimer = 0
+var hellInterval = null;
+var hellTimeout = null;
 
 //draw hud
 function drawHUD(){
