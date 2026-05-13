@@ -36,6 +36,7 @@ function createGameObject(){
     radius: 15,
     width: 15,
     height: 15,
+    sprite:"player",
     hasEntered:false,
     drawBall: function (){
         ctx.beginPath();
@@ -57,7 +58,11 @@ function createGameObject(){
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
+        //ctx.drawImage(this.sprite,-this.radius * 2,-this.radius * 2, this.width * 2, this.height * 2);
         ctx.restore();
+    },
+    drawSprite: function(){
+        ctx.drawImage(this.sprite,this.x,this.y, this.radius, this.radius);
     },
 
     }
@@ -80,13 +85,15 @@ function setRandomDirection(){
 //Player Instance
 
 var player = createGameObject();
+var playerSprite = document.getElementById("player");
 player.x = canvas.width/2;
 player.y = canvas.height/2;
 player.width = 30;
 player.height = 30;
 var playerHitRadius = 7;
 player.color = "yellow"
-player.rotation = 0;  // initialize rotation
+player.rotation = 0; // initialize rotation
+player.sprite = playerSprite; 
 var myBalls = [];
 //enemies spawn timer
 var spawnTimer = 0;
@@ -227,12 +234,12 @@ function shoot(){
     var fireAngle = player.rotation - Math.PI / 2;  // Remove the +π/2 offset
     var speed = 10;
     var tipDistance = player.radius;
-
     var angleOffsets;
+    //single double and triple firing
     if(tripleShot){
         angleOffsets = [-0.2, 0, 0.2];
     } else if(weaponUpgraded){
-        angleOffsets = [-0.15, 0.15];
+        angleOffsets = [-0.20, 0.00];
     } else {
         angleOffsets = [0];
     }
@@ -321,7 +328,7 @@ if(bulletHellTimer > 0 ){
     ctx.fillStyle = "magenta"
     ctx.fillText("BULLET HELL:" + bulletHellTimer, 20, 80);
     } 
-}
+} //shooter
 function drawDiamond(e){
     ctx.save();
     ctx.translate(e.x,e.y);
@@ -332,7 +339,7 @@ function drawDiamond(e){
     ctx.fillRect(-e.radius, -e.radius,e.radius * 2, e.radius * 2);
     ctx.strokeRect(-e.radius,-e.radius, e.radius * 2, e.radius * 2);
     ctx.restore();
-}
+}//orbiter
 function drawStripedCircle(e){
     ctx.save();
     ctx.translate(e.x,e.y);
@@ -346,7 +353,7 @@ function drawStripedCircle(e){
     ctx.fillRect(i, -e.radius, 3, e.radius * 2);
     }
     ctx.restore();
-}
+} //snake boss
 function spawnSnakeBoss(){
     snakeBoss = {
         segments: [],
@@ -354,7 +361,7 @@ function spawnSnakeBoss(){
         maxHp: 3,
         moveX: 3,
         moveY: 2
-    };
+    }; //tail and projectiles
     for(var i = 0; i < 50; i++){
         snakeBoss.segments.push({
             x: 50 - i * 28,
@@ -400,7 +407,7 @@ function spawnSnakeBoss(){
             }
         }
     
-    }           //snake boss form 
+    }           //snake boss rendering 
     function drawBoss(){
         for(var i = snakeBoss.segments.length - 1; i >= 0; i--){
             var seg = snakeBoss.segments[i];
@@ -485,7 +492,7 @@ function spawnSnakeBoss(){
     var dx = mouseX - player.x;
     var dy = mouseY - player.y;
     player.rotation = Math.atan2 (dy, dx) + Math.PI / 2;
-    //
+    //player controls and powerup 
     var moveX = 0;
     var moveY = 0;
     if(w == true || up == true){
@@ -517,6 +524,8 @@ function spawnSnakeBoss(){
         shoot();
        
     }
+    
+   
 
     //acceleration
     player.velocityX += moveX * acceleration * (delta * 60);
@@ -540,6 +549,9 @@ function spawnSnakeBoss(){
     if(player.y + player.radius > canvas.height) player.y = canvas.height - player.radius;
     if(invincibleTimer > 0) invincibleTimer -= delta;
 
+    
+
+
     //dash movement
     if(isDashing){
         var dashAngle = player.rotation - Math.PI / 2;
@@ -561,6 +573,8 @@ function spawnSnakeBoss(){
 
     
     player.drawSquare();
+    //draw sprite
+     //player.drawSprite();
 
     // ENEMY LOOP
     for(var i = 0; i < myBalls.length; i++){
@@ -618,7 +632,7 @@ function spawnSnakeBoss(){
                         });
                     }
                 }
-            }
+            } //enemy render state when entering canvas
             if(!enemy.hasEntered &&
                 enemy.x - enemy.radius > 0 &&
                 enemy.x + enemy.radius < canvas.width &&
@@ -719,6 +733,7 @@ function spawnSnakeBoss(){
                                             bossAlert = 3;
                                             alertMessage = "BOSS ABOLISHED";
                                             pendingAlert = "TRIGUN ACQUIRED";
+                                           
                                         }
                                     } else{
                                         bullets.splice(b, 1);
