@@ -18,6 +18,8 @@ var deathTime = 0;
 var timer = 0; //seconds 
 
 //gamestate
+var gameOverTimer = 0;
+var spaceWasReleased = false;
 var states = ("game")
 states = "game"
 
@@ -82,6 +84,7 @@ player.x = canvas.width/2;
 player.y = canvas.height/2;
 player.width = 30;
 player.height = 30;
+var playerHitRadius = 7;
 player.color = "yellow"
 player.rotation = 0;  // initialize rotation
 var myBalls = [];
@@ -179,7 +182,9 @@ function triggerGameOver(){
     deathTime = timer;
     if(deathScore > highScore) highScore = deathScore;
     if(deathTime > highScoreTime) highScoreTime = deathTime;
-    states = "gameOver";
+    states ="gameOver";
+    spaceWasReleased = false;
+    gameOverTimer = 0;
 }
 function resetGame(){
     score = 0;
@@ -208,6 +213,7 @@ function resetGame(){
     player.y = canvas.height / 2;
     player.velocityX = 0;
     player.velocityY = 0;
+    gameOverTimer = 0;
     for(var i = 0; i < 10; i++){ spawnEnemy(1);}
         w = a = s = d = false;
     space = false;
@@ -545,7 +551,7 @@ function spawnSnakeBoss(){
             var edx = player.x - myBalls[e].x;
             var edy = player.y - myBalls[e].y;
             var edist = Math.sqrt(edx * edx + edy *edy);
-            if(edist < player.radius + myBalls[e].radius){
+            if(edist < playerHitRadius + myBalls[e].radius){
                 score++;
                 myBalls.splice(e,1);
             }
@@ -577,7 +583,7 @@ function spawnSnakeBoss(){
             enemy.orbitRadius -= 25 * delta;
             enemy.x = player.x + Math.cos(enemy.orbitAngle) * enemy.orbitRadius;
             enemy.y = player.y + Math.sin(enemy.orbitAngle) * enemy.orbitRadius;
-            if(enemy.orbitRadius <= player.radius){
+            if(enemy.orbitRadius <= playerHitRadius){
                 if(invincibleTimer <= 0) triggerGameOver();
             }
            } else {
@@ -593,7 +599,7 @@ function spawnSnakeBoss(){
              enemy.y += enemy.moveY * (delta * 60);
              var pedx = player.x - enemy.x
              var pedy = player.y - enemy.y
-             if(Math.sqrt(pedx * pedx + pedy *pedy) < player.radius + enemy.radius && !isDashing && invincibleTimer <= 0){
+             if(Math.sqrt(pedx * pedx + pedy *pedy) < playerHitRadius + enemy.radius && !isDashing && invincibleTimer <= 0){
                 triggerGameOver();
              }
             if(enemy.type === "shooter"){
@@ -663,8 +669,11 @@ function spawnSnakeBoss(){
                 bullets[b].x += bullets[b].velocityX * (delta * 60);
                 bullets[b].y += bullets[b].velocityY * (delta * 60);
                 bullets[b].drawSquare();
-                if(bullets[b].y + bullets[b].height < 0){
-                    bullets.splice(b, 1);
+                if(bullets[b].y + bullets[b].height < 0||
+                    bullets[b].y > canvas.height ||
+                    bullets[b].x + bullets[b].width < 0 ||
+                    bullets[b].x > canvas.width){
+                        bullets.splice(b, 1);
                 } else {
                     for(var e = 0; e < myBalls.length; e++){
                         var distX = bullets[b].x - myBalls[e].x;
@@ -748,7 +757,7 @@ function spawnSnakeBoss(){
                 ctx.fill();
                 var pbx = player.x - enemyBullets[eb].x;
                 var pby = player.y - enemyBullets[eb].y;
-                if(Math.sqrt(pbx * pbx + pby * pby) < player.radius + enemyBullets[eb].radius){
+                if(Math.sqrt(pbx * pbx + pby * pby) < playerHitRadius + enemyBullets[eb].radius){
                     if(invincibleTimer <= 0) triggerGameOver();
                 }
 
@@ -779,7 +788,7 @@ function spawnSnakeBoss(){
                         var bsdx = player.x - snakeBoss.segments[bs].x;
                         var bsdy = player.y - snakeBoss.segments[bs].y;
                         var bsRad = bs === 0 ? 22 : 18;
-                        if(Math.sqrt(bsdx * bsdx + bsdy * bsdy) < player.radius + bsRad){
+                        if(Math.sqrt(bsdx * bsdx + bsdy * bsdy) < playerHitRadius + bsRad){
                             triggerGameOver();
                             break;
                         }
@@ -808,9 +817,13 @@ function spawnSnakeBoss(){
                     ctx.fillStyle = "white";
                     ctx.font = "24px Arial";
                      ctx.fillText("Press SPACE to try again", canvas.width / 2, canvas.height / 2 + 80);
-                    if(space){
-                        resetGame();
+                     gameOverTimer += delta;
+                    if(!space) spaceWasReleased = true;
+                    if(space && spaceWasReleased && gameOverTimer > 1){
+                          resetGame();
                     }
+                      
+                    
                 break;    
             }
         }
