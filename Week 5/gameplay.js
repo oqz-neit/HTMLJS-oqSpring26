@@ -76,7 +76,7 @@ function setRandomDirection(){
 
 
 //Player Instance
-var myBall = createGameObject();
+
 var player = createGameObject();
 player.x = canvas.width/2;
 player.y = canvas.height/2;
@@ -209,6 +209,10 @@ function resetGame(){
     player.velocityX = 0;
     player.velocityY = 0;
     for(var i = 0; i < 10; i++){ spawnEnemy(1);}
+        w = a = s = d = false;
+    space = false;
+    w = a = s = d = false;
+    space = false;
     states = "game";
 }
 //shooting mechanics
@@ -549,7 +553,7 @@ function spawnSnakeBoss(){
         }
     }
 
-    myBall.drawBall();
+    
     player.drawSquare();
 
     // ENEMY LOOP
