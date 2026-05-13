@@ -11,6 +11,10 @@ var friction = 0.88;
 var maxspeed = 11;
 var numberofEnemies;
 var score = 0;
+var highScore = 0;
+var highScoreTime = 0;
+var deathScore = 0;
+var deathTime = 0;
 var timer = 0; //seconds 
 
 //gamestate
@@ -169,6 +173,42 @@ var alertMessage = "";
 var pendingAlert = "";
 var weaponUpgraded = false;
 var tripleShot = false;
+//game over + high score
+function triggerGameOver(){
+    deathScore = score;
+    deathTime = score;
+    if(deathScore > highScore) highScore = deathScore;
+    if(deathTime > highScoreTime) highScoreTime = deathTime;
+    states = "gameOver";
+}
+function resetGame(){
+    score = 0;
+    timer = 0;
+    spawnTimer = 0;
+    bullets = [];
+    enemyBullets = [];
+    myBalls = [];
+    bossSpawned = false;
+    snakeBoss = null;
+    bossAlert = 0;
+    alertMessage = "";
+    pendingAlert = "";
+    weaponUpgraded = false;
+    tripleShot = false;
+    canShoot = true;
+    isDashing= false;
+    invincibleTimer = 0;
+    dashTimer = 0;
+    bulletHellTimer = 0;
+    currentPowerup = null;
+    powerupItems = [];
+    player.x = canvas.width / 2;
+    player.y = canvas.height / 2;
+    player.velocityX = 0;
+    player.velocityY = 0;
+    for(var i = 0; i < 10; i++){ spawnEnemy(1);}
+    states = "game";
+}
 //shooting mechanics
 function shoot(){
     // Offset bullet spawn to tip of triangle
@@ -241,6 +281,7 @@ function startBulletHell(){
 var powerupItems = []; //pickups on screen
 var currentPowerup = null; //no powerup held
 var isDashing = false;
+var invincibleTimer = 0
 var dashTimer = 0;
 var dashDuration = 15;
 var dashSpeed = 25;
@@ -253,6 +294,7 @@ function drawHUD(){
     var seconds = Math.floor(timer % 60);
     
     //display
+ctx.textAlign = "left"
 ctx.fillStyle = "black";
 ctx.font = "20px Arial";
 ctx.fillText(`Enemies Defeated ${score}|| Time ${minutes}:${seconds}`,20, 30)
@@ -370,7 +412,7 @@ function spawnSnakeBoss(){
     var delta = (timestamp - lasttime) / 1000;
     lasttime = timestamp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    timer += delta;
+    if(states === "game")timer += delta;
     spawnTimer += delta;
 
         var phase = timer < 15 ? 1 : timer < 25 ? 2 : 3;
@@ -480,7 +522,8 @@ function spawnSnakeBoss(){
     if(player.x - player.radius < 0) player.x = player.radius;
     if(player.x + player.radius > canvas.width) player.x = canvas.width - player.radius;
     if(player.y - player.radius < 0) player.y = player.radius;
-    if(player.y + player.radius > canvas.height) player.y = canvas.height - player.radius
+    if(player.y + player.radius > canvas.height) player.y = canvas.height - player.radius;
+    if(invincibleTimer > 0) invincibleTimer -= delta;
 
     //dash movement
     if(isDashing){
@@ -488,7 +531,7 @@ function spawnSnakeBoss(){
         player.x += Math.cos(dashAngle) * dashSpeed;
         player.y += Math.sin(dashAngle) * dashSpeed;
         dashTimer -= delta * 60;
-        if(dashTimer <= 0) isDashing = false;
+        if(dashTimer <= 0){ isDashing = false; invincibleTimer = 0.5;}
         for(var e = myBalls.length - 1; e >= 0; e--){
             var edx = player.x - myBalls[e].x;
             var edy = player.y - myBalls[e].y;
@@ -526,9 +569,7 @@ function spawnSnakeBoss(){
             enemy.x = player.x + Math.cos(enemy.orbitAngle) * enemy.orbitRadius;
             enemy.y = player.y + Math.sin(enemy.orbitAngle) * enemy.orbitRadius;
             if(enemy.orbitRadius <= player.radius){
-                score = Math.max(0, score - 1);
-                myBalls.splice(i, 1);
-                i--;
+                if(invincibleTimer <= 0) triggerGameOver();
             }
            } else {
             var edx = player.x - enemy.x;
@@ -541,6 +582,11 @@ function spawnSnakeBoss(){
             }
              enemy.x += enemy.moveX * (delta * 60);
              enemy.y += enemy.moveY * (delta * 60);
+             var pedx = player.x - enemy.x
+             var pedy = player.y - enemy.y
+             if(Math.sqrt(pedx * pedx + pedy *pedy) < player.radius + enemy.radius && !isDashing && invincibleTimer <= 0){
+                triggerGameOver();
+             }
             if(enemy.type === "shooter"){
                 enemy.shootTimer += delta;
                 if(enemy.shootTimer >= enemy.shootInterval){
@@ -691,6 +737,12 @@ function spawnSnakeBoss(){
                 ctx.fillStyle = enemyBullets[eb].bouncing ? "#ff8800" : "#ff4444";
                 ctx.arc(enemyBullets[eb].x, enemyBullets[eb].y, enemyBullets[eb].radius, 0, 2 * Math.PI);
                 ctx.fill();
+                var pbx = player.x - enemyBullets[eb].x;
+                var pby = player.y - enemyBullets[eb].y;
+                if(Math.sqrt(pbx * pbx + pby * pby) < player.radius + enemyBullets[eb].radius){
+                    if(invincibleTimer <= 0) triggerGameOver();
+                }
+
                 if(enemyBullets[eb].bouncing){
                     var br = enemyBullets[eb].radius;
                     enemyBullets[eb].lifetime -= delta;
@@ -714,7 +766,42 @@ function spawnSnakeBoss(){
                 if(snakeBoss){
                     updateBoss(delta);
                     drawBoss();
+                    for(var bs = 0; bs < snakeBoss.segments.length; bs++){
+                        var bsdx = player.x - snakeBoss.segments[bs].x;
+                        var bsdy = player.y - snakeBoss.segments[bs].y;
+                        var bsRad = bs === 0 ? 22 : 18;
+                        if(Math.sqrt(bsdx * bsdx + bsdy * bsdy) < player.radius + bsRad){
+                            triggerGameOver();
+                            break;
+                        }
+                    }
                 }
                 break;
+                case "gameOver":
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    if(score > highScore) highScore = score;
+                    if(timer > highScoreTime) highScoreTime = timer;
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = "red";
+                    ctx.font = "bold 72px Arial";
+                    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2 - 80);
+                    ctx.fillStyle = "white";
+                    ctx.font = "28px Arial"
+                    var cm = Math.floor(deathTime / 60);
+                    var cs = Math.floor(deathTime % 60);
+                    ctx.fillText("TERMINATED:" + deathScore + "Time:" + cm + ":" + (cs < 10 ? "0" : "") + cs, canvas.width / 2, canvas.height / 2 - 20);
+                    ctx.fillStyle = "white";
+                    ctx.font = "22px Arial";
+                    var bm = Math.floor(highScoreTime / 60);
+                    var bs2 = Math.floor(highScoreTime % 60);
+                    ctx.fillText("BEST ELIMINATED:" + highScore + "Time:" + bm + ":" + (bs2 < 10 ? "0" : "") + bs2, canvas.width / 2, canvas.height / 2 + 25);
+                    ctx.fillStyle = "white";
+                    ctx.font = "24px Arial";
+                     ctx.fillText("Press SPACE to try again", canvas.width / 2, canvas.height / 2 + 80);
+                    if(space){
+                        resetGame();
+                    }
+                break;    
             }
         }
