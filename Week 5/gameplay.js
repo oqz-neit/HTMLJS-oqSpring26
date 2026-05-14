@@ -15,6 +15,9 @@ var highScore = 0;
 var highScoreTime = 0;
 var deathScore = 0;
 var deathTime = 0;
+var lives = 2;
+var maxLives = 2;
+var nextLifeAt = 50;
 var timer = 0; //seconds 
 
 //gamestate
@@ -58,11 +61,15 @@ function createGameObject(){
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
-        //ctx.drawImage(this.sprite,-this.radius * 2,-this.radius * 2, this.width * 2, this.height * 2);
+        
         ctx.restore();
     },
     drawSprite: function(){
-        ctx.drawImage(this.sprite,this.x,this.y, this.radius, this.radius);
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        ctx.rotate(this.rotation);
+        ctx.drawImage(this.sprite,-this.radius * 2,-this.radius * 2, this.radius * 4, this.radius * 4);
+        ctx.restore();
     },
 
     }
@@ -192,6 +199,15 @@ function triggerGameOver(){
     states ="gameOver";
     spaceWasReleased = false;
     gameOverTimer = 0;
+   
+}
+function loseLife(){
+    lives--;
+    if(lives<= 0){
+        triggerGameOver();
+    } else {
+        invincibleTimer = 1;
+    }
 }
 function resetGame(){
     score = 0;
@@ -220,6 +236,8 @@ function resetGame(){
     player.y = canvas.height / 2;
     player.velocityX = 0;
     player.velocityY = 0;
+    lives = 2;
+    nextLifeAt += 50;
     gameOverTimer = 0;
     for(var i = 0; i < 10; i++){ spawnEnemy(1);}
         w = a = s = d = false;
@@ -233,7 +251,7 @@ function shoot(){
     // Offset bullet spawn to tip of triangle
     var fireAngle = player.rotation - Math.PI / 2;  // Remove the +π/2 offset
     var speed = 10;
-    var tipDistance = player.radius;
+    var tipDistance = player.radius * 2;
     var angleOffsets;
     //single double and triple firing
     if(tripleShot){
@@ -285,9 +303,20 @@ function bulletHell(){
 }
 //bullet hell timer 
 function startBulletHell(){
+    if(hellInterval !== null){
+        bulletHellTimer += 3;
+        if(hellTimeout) clearTimeout(hellTimeout);
+        hellTimeout = setTimeout(function(){
+            clearInterval(hellInterval);
+            hellInterval = null;
+            bulletHellTimer = 0;
+        },bulletHellTimer * 1000);
+        bulletHell();
+        return;
+    }
     bulletHellTimer = 3;
     bulletHell();
- hellInterval = setInterval(function(){
+    hellInterval = setInterval(function(){
         bulletHell();
         bulletHellTimer--;
     }, 1000);
@@ -317,7 +346,7 @@ function drawHUD(){
     
     //display
 ctx.textAlign = "left"
-ctx.fillStyle = "black";
+ctx.fillStyle = "white";
 ctx.font = "20px Arial";
 ctx.fillText(`Enemies Defeated ${score}|| Time ${minutes}:${seconds}`,20, 30)
 var puNames = {dash: "DASH", nuke: "NUKE", bulletHell: "BULLET HELL"};
@@ -328,6 +357,8 @@ if(bulletHellTimer > 0 ){
     ctx.fillStyle = "magenta"
     ctx.fillText("BULLET HELL:" + bulletHellTimer, 20, 80);
     } 
+    ctx.fillStyle = "white"
+    ctx.fillText("LIVES:" + lives, 20, 105);
 } //shooter
 function drawDiamond(e){
     ctx.save();
@@ -436,6 +467,10 @@ function spawnSnakeBoss(){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if(states === "game")timer += delta;
     spawnTimer += delta;
+    if(score >= nextLifeAt){
+        if(lives < maxLives) lives++;
+        nextLifeAt += 50;
+    }
 
         var phase = timer < 15 ? 1 : timer < 25 ? 2 : 3;
         var spawnRate = Math.max(1.5, 3 - Math.floor(timer / 30));
@@ -572,10 +607,10 @@ function spawnSnakeBoss(){
     }
 
     
-    player.drawSquare();
-    //draw sprite
-     //player.drawSprite();
-
+    //player.drawSquare();
+     if(invincibleTimer <= 0 || Math.floor(invincibleTimer * 10) % 2 === 0){
+        player.drawSprite();
+     }
     // ENEMY LOOP
     for(var i = 0; i < myBalls.length; i++){
             var enemy = myBalls[i];
@@ -598,7 +633,7 @@ function spawnSnakeBoss(){
             enemy.x = player.x + Math.cos(enemy.orbitAngle) * enemy.orbitRadius;
             enemy.y = player.y + Math.sin(enemy.orbitAngle) * enemy.orbitRadius;
             if(enemy.orbitRadius <= playerHitRadius){
-                if(invincibleTimer <= 0) triggerGameOver();
+                if(invincibleTimer <= 0) loseLife();
             }
            } else {
             var edx = player.x - enemy.x;
@@ -614,7 +649,7 @@ function spawnSnakeBoss(){
              var pedx = player.x - enemy.x
              var pedy = player.y - enemy.y
              if(Math.sqrt(pedx * pedx + pedy *pedy) < playerHitRadius + enemy.radius && !isDashing && invincibleTimer <= 0){
-                triggerGameOver();
+                loseLife();
              }
             if(enemy.type === "shooter"){
                 enemy.shootTimer += delta;
@@ -773,7 +808,7 @@ function spawnSnakeBoss(){
                 var pbx = player.x - enemyBullets[eb].x;
                 var pby = player.y - enemyBullets[eb].y;
                 if(Math.sqrt(pbx * pbx + pby * pby) < playerHitRadius + enemyBullets[eb].radius){
-                    if(invincibleTimer <= 0) triggerGameOver();
+                    if(invincibleTimer <= 0) loseLife();
                 }
 
                 if(enemyBullets[eb].bouncing){
@@ -804,7 +839,7 @@ function spawnSnakeBoss(){
                         var bsdy = player.y - snakeBoss.segments[bs].y;
                         var bsRad = bs === 0 ? 22 : 18;
                         if(Math.sqrt(bsdx * bsdx + bsdy * bsdy) < playerHitRadius + bsRad){
-                            triggerGameOver();
+                            if(invincibleTimer <= 0)loseLife();
                             break;
                         }
                     }
