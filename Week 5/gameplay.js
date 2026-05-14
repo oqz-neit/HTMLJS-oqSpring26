@@ -66,9 +66,10 @@ function createGameObject(){
     },
     drawSprite: function(){
         ctx.save();
-        ctx.translate(this.x,this.y);
+        ctx.translate(this.x - 2.5, this.y - 1.5);
         ctx.rotate(this.rotation);
-        ctx.drawImage(this.sprite,-this.radius * 2,-this.radius * 2, this.radius * 4, this.radius * 4);
+        var size = this.radius * 4;
+        ctx.drawImage(this.sprite, -size / 2, this.radius / 3 - size / 2, size, size);
         ctx.restore();
     },
 
@@ -93,6 +94,7 @@ function setRandomDirection(){
 
 var player = createGameObject();
 var playerSprite = document.getElementById("player");
+var chaserSprite = document.getElementById("chaser");
 player.x = canvas.width/2;
 player.y = canvas.height/2;
 player.width = 30;
@@ -107,6 +109,7 @@ var spawnTimer = 0;
 
 function spawnEnemy(phase){ //enemy phases
    var enemy = createGameObject();
+  
    var side = Math.floor(Math.random()* 4);
    if(side === 0){ //top
     enemy.x = randomNumber(0, canvas.width);
@@ -346,7 +349,7 @@ function drawHUD(){
     
     //display
 ctx.textAlign = "left"
-ctx.fillStyle = "white";
+ctx.fillStyle = "black";
 ctx.font = "20px Arial";
 ctx.fillText(`Enemies Defeated ${score}|| Time ${minutes}:${seconds}`,20, 30)
 var puNames = {dash: "DASH", nuke: "NUKE", bulletHell: "BULLET HELL"};
@@ -357,9 +360,18 @@ if(bulletHellTimer > 0 ){
     ctx.fillStyle = "magenta"
     ctx.fillText("BULLET HELL:" + bulletHellTimer, 20, 80);
     } 
-    ctx.fillStyle = "white"
+    ctx.fillStyle = "black"
     ctx.fillText("LIVES:" + lives, 20, 105);
-} //shooter
+}
+//chaser
+function drawChaserSprite(e){
+    e.drawBall();
+    ctx.save();
+    ctx.translate(e.x,e.y);
+    ctx.drawImage(chaserSprite, -e.radius * 2, -e.radius * 2, e.radius * 4, e.radius * 4);
+    ctx.restore();   
+} 
+//shooter
 function drawDiamond(e){
     ctx.save();
     ctx.translate(e.x,e.y);
@@ -607,8 +619,9 @@ function spawnSnakeBoss(){
     }
 
     
-    //player.drawSquare();
+   
      if(invincibleTimer <= 0 || Math.floor(invincibleTimer * 10) % 2 === 0){
+         player.drawSquare();
         player.drawSprite();
      }
     // ENEMY LOOP
@@ -693,7 +706,7 @@ function spawnSnakeBoss(){
                 } else if(enemy.type === "orbital"){
                     drawStripedCircle(enemy);
                 } else {
-                    enemy.drawBall();
+                    drawChaserSprite(enemy);
                 }
             }
             
