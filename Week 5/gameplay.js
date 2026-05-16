@@ -36,9 +36,9 @@ function createGameObject(){
     velocityX: 0,
     velocityY: 0,
     color: "yellow",
-    radius: 15,
-    width: 15,
-    height: 15,
+    radius: 20,
+    width: 20,
+    height: 20,
     sprite:"player",
     hasEntered:false,
     drawBall: function (){
@@ -95,6 +95,9 @@ function setRandomDirection(){
 var player = createGameObject();
 var playerSprite = document.getElementById("player");
 var chaserSprite = document.getElementById("chaser");
+var shooterSprite = document.getElementById("shooter");
+var snakeHeadSprite = document.getElementById("snakehead");
+var orbitalSprite = document.getElementById("orbital");
 player.x = canvas.width/2;
 player.y = canvas.height/2;
 player.width = 30;
@@ -138,6 +141,7 @@ function spawnEnemy(phase){ //enemy phases
         enemy.orbitRadius = 150;
         enemy.orbitSpeed = (Math.random() > 0.5) ? 1.5 : -1.5;
         enemy.dodgeCooldown = 0;
+        enemy.radius = 15;
     }
     myBalls.push(enemy);
     return;
@@ -168,6 +172,7 @@ function spawnEnemy(phase){ //enemy phases
     enemy.orbitAngle = Math.random() * 2 * Math.PI;
     enemy.orbitRadius = 150;
     enemy.orbitSpeed = (Math.random() > 0.5) ? 1.5 : -1.5;
+    enemy.radius = 15;
     enemy.dodgeCooldown = 0;
    }
 
@@ -375,6 +380,7 @@ function drawChaserSprite(e){
 function drawDiamond(e){
     ctx.save();
     ctx.translate(e.x,e.y);
+    ctx.save();
     ctx.rotate(Math.PI / 4);    //45 degree turns a square into a diamond 
     ctx.fillStyle = "#ff4444";
     ctx.strokeStyle = "#990000";
@@ -382,10 +388,13 @@ function drawDiamond(e){
     ctx.fillRect(-e.radius, -e.radius,e.radius * 2, e.radius * 2);
     ctx.strokeRect(-e.radius,-e.radius, e.radius * 2, e.radius * 2);
     ctx.restore();
+    ctx.drawImage(shooterSprite, -e.radius, -e.radius, e.radius * 2, e.radius * 2);
+    ctx.restore();
 }//orbiter
 function drawStripedCircle(e){
     ctx.save();
     ctx.translate(e.x,e.y);
+    ctx.save();
     ctx.beginPath();
     ctx.arc(0, 0, e.radius, 0, 2 * Math.PI);
     ctx.clip(); //clips drawing to the circle's shape 
@@ -395,6 +404,9 @@ function drawStripedCircle(e){
     for(var i = -e.radius; i < e.radius; i += 7){ //draw verticle stripes 
     ctx.fillRect(i, -e.radius, 3, e.radius * 2);
     }
+    ctx.restore();
+    var s = e.radius * 2.5;
+    ctx.drawImage(orbitalSprite, -s / 2, -s / 2, s, s)
     ctx.restore();
 } //snake boss
 function spawnSnakeBoss(){
@@ -457,11 +469,19 @@ function spawnSnakeBoss(){
             var segRadius = i === 0 ? 22 : 18;
             ctx.beginPath();
             ctx.arc(seg.x, seg.y, segRadius, 0, 2 * Math.PI);
-            ctx.fillStyle = i === 0  ? "#00ff88" : "#007744";
+            ctx.fillStyle = i === 0  ? (snakeBoss.segments.length === 1 ? "#ff4400" : "#00ff88"): "#007744" ;
             ctx.fill();
-            ctx.strokeStyle = "#00ffaa";
+            ctx.strokeStyle = (i === 0 && snakeBoss.segments.length === 1) ? "#00ffaa": "#000000"
             ctx.lineWidth = 2;
             ctx.stroke();
+            if(i === 0 ){
+                var headAngle = Math.atan2(snakeBoss.moveY, snakeBoss.moveX) + Math.PI / 2;
+                ctx.save();
+                ctx.translate(seg.x, seg.y);
+                ctx.rotate(headAngle);
+                ctx.drawImage(snakeHeadSprite, - segRadius * 3, - segRadius * 3.5, segRadius * 6, segRadius * 6);
+                ctx.restore();
+            }   
         }
         ctx.fillStyle = "#333";
         ctx.fillRect(canvas.width / 2 - 100, 8, 200, 14);
@@ -487,6 +507,7 @@ function spawnSnakeBoss(){
         var phase = timer < 15 ? 1 : timer < 25 ? 2 : 3;
         var spawnRate = Math.max(1.5, 3 - Math.floor(timer / 30));
         var count = Math.min(4, 1 + Math.floor(timer / 30));
+        if(snakeBoss) count = 1;
         if(spawnTimer >= spawnRate){
             spawnTimer = 0;
         for(var j = 0; j < count; j++){
@@ -561,6 +582,7 @@ function spawnSnakeBoss(){
         }else if(currentPowerup === "nuke"){
         score += myBalls.length;
         myBalls = [];
+        enemyBullets = [];
         }else if(currentPowerup === "bulletHell"){
             startBulletHell();
         }
@@ -616,6 +638,14 @@ function spawnSnakeBoss(){
             }
 
         }
+        for(var eb = enemyBullets.length - 1; eb >= 0; eb--){
+            var dbx = player.x - enemyBullets[eb].x;
+            var dby = player.y - enemyBullets[eb].y;
+            if(Math.sqrt (dbx * dbx + dby * dby) < playerHitRadius + enemyBullets[eb].radius){
+                enemy.Bullets.splice(eb, 1);
+            }
+        };
+
     }
 
     
@@ -707,16 +737,20 @@ function spawnSnakeBoss(){
                     drawStripedCircle(enemy);
                 } else {
                     drawChaserSprite(enemy);
-                }
+                  }
             }
             
             //powerup loop
             for(var p = powerupItems.length - 1; p >= 0; p--){
                 var pu = powerupItems[p];
+                pu.lifetime -= delta;
+                if(pu.lifetime <= 0){ powerupItems.splice(p, 1); continue; }
+                ctx.globalAlpha = pu.lifetime < 3 ? pu.lifetime / 3: 1;
                 ctx.beginPath();
                 ctx.fillStyle = pu.color;
                 ctx.arc(pu.x, pu.y, pu.radius, 0, 2 * Math.PI);
                 ctx.fill();
+                ctx.globalAlpha = 1;
                 var pdx = player.x - pu.x;
                 var pdy = player.y - pu.y;
                 var pdist = Math.sqrt(pdx * pdx + pdy * pdy);
@@ -755,7 +789,7 @@ function spawnSnakeBoss(){
                                     var types = ["dash", "nuke", "bulletHell"];
                                     var type = types[Math.floor(Math.random() * types.length)];
                                     var puColors = {dash: "cyan", nuke: "orange", bulletHell: "magenta"};
-                                    powerupItems.push({x: deadX, y: deadY, radius: 10, type: type, color: puColors[type]});
+                                    powerupItems.push({x: deadX, y: deadY, radius: 10, type: type, color: puColors[type], lifetime: 8});
 
                                 }
                             }
