@@ -5,17 +5,27 @@
         <meta name = "viewport", intial-scale="1.0"></meta> 
         <title>Week 5: Geometry Wars</title>
         <style>
+            body{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0;
+                background-color: black;
+            }
             #myCanvas{
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-                background-color:white;
-
+                background-color: white;
+            }
+                .side-img{
+                width: 500px;
+                height: 800px;
+                object-fit: cover;
             }
         </style>
     </head>
     <body>
+        <img src="images/snakehead background.png" class="side-img">
         <canvas id="myCanvas" width="800" height="800" style="border: 1px solid black;"></canvas>
+        <img src="images/background right.png" class="side-img">
         <img src = "images/orbital.png" alt = "image of sprite" style = "display: none;" id ="orbital">
         <img src="images/snake head.png" alt = "image of sprite" style="display: none;" id ="snakehead">
         <img src="images/shooter.png" alt="image of sprite" style="display: none;" id = "shooter">

@@ -23,8 +23,8 @@ var timer = 0; //seconds
 //gamestate
 var gameOverTimer = 0;
 var spaceWasReleased = false;
-var states = ("game")
-states = "game"
+var states = "menu";
+
 
 //creation of player 
 function createGameObject(){
@@ -345,6 +345,19 @@ var dashSpeed = 25;
 var bulletHellTimer = 0
 var hellInterval = null;
 var hellTimeout = null;
+//menu
+var menuButton = {x: 300, y: 420, width: 200, height: 50};
+function drawMenu(){
+    ctx.fillStyle = "black";
+    ctx.font = "bold 60px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText ("BLOCK OPS: ARCADE", canvas.width / 2, 300);
+    ctx.fillStyle = "lime";
+    ctx.fillRect(menuButton.x, menuButton.y, menuButton.width, menuButton.height);
+    ctx.fillStyle = "black";
+    ctx.font = "bold 28px Arial";
+    ctx.fillText("Start!", canvas.width / 2, menuButton.y + 35);
+};
 
 //draw hud
 function drawHUD(){
@@ -548,6 +561,9 @@ function spawnSnakeBoss(){
 
 
     switch (states){
+        case "menu":
+            drawMenu();
+        break;    
         case "game":
             drawHUD();
             
@@ -924,3 +940,14 @@ function spawnSnakeBoss(){
                 break;    
             }
         }
+                canvas.addEventListener("click", function(e){
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    if(states === "menu"){
+                        if(mx > menuButton.x && mx < menuButton.x + menuButton.width &&
+                            my > menuButton.y && my < menuButton.y + menuButton.height){
+                               resetGame();
+                            }
+                        }
+                    });  
