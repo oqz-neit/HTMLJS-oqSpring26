@@ -93,11 +93,13 @@ function setRandomDirection(){
 //Player Instance
 
 var player = createGameObject();
+var menuBg = document.getElementById("menubg");
 var playerSprite = document.getElementById("player");
 var chaserSprite = document.getElementById("chaser");
 var shooterSprite = document.getElementById("shooter");
 var snakeHeadSprite = document.getElementById("snakehead");
 var orbitalSprite = document.getElementById("orbital");
+
 player.x = canvas.width/2;
 player.y = canvas.height/2;
 player.width = 30;
@@ -245,7 +247,7 @@ function resetGame(){
     player.velocityX = 0;
     player.velocityY = 0;
     lives = 2;
-    nextLifeAt += 50;
+    nextLifeAt = 50;
     gameOverTimer = 0;
     for(var i = 0; i < 10; i++){ spawnEnemy(1);}
         w = a = s = d = false;
@@ -345,9 +347,13 @@ var dashSpeed = 25;
 var bulletHellTimer = 0
 var hellInterval = null;
 var hellTimeout = null;
+
 //menu
 var menuButton = {x: 300, y: 420, width: 200, height: 50};
 function drawMenu(){
+    ctx.globalAlpha = 0.3;
+    ctx.drawImage(menuBg, 0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 1;
     ctx.fillStyle = "black";
     ctx.font = "bold 60px Arial";
     ctx.textAlign = "center";
@@ -507,7 +513,7 @@ function spawnSnakeBoss(){
     function game(timestamp){
     //clear screen & increasing timer
     requestAnimationFrame(game);
-    var delta = (timestamp - lasttime) / 1000;
+    var delta = Math.min((timestamp - lasttime) / 1000, 0.05);
     lasttime = timestamp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if(states === "game")timer += delta;
@@ -552,7 +558,7 @@ function spawnSnakeBoss(){
             if(bossAlert > 0){
             ctx.save();
             ctx.fillStyle = "rgba(255, 0, 0," + Math.min(1, bossAlert) + ")";
-            ctx.font = "bold 100px Arial";
+            ctx.font = "bold 60px Arial";
             ctx.textAlign = "center";
             ctx.fillText(alertMessage, canvas.width / 2, canvas.height / 2);
             ctx.restore();
